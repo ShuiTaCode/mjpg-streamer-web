@@ -23,7 +23,7 @@ A modern, simple web frontend for multiple MJPEG streams (e.g. from USB cameras)
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/mjpg-streamer-web.git
+git clone https://github.com/ShuiTaCode/mjpg-streamer-web.git
 cd mjpg-streamer-web
 ```
 
