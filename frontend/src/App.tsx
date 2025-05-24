@@ -8,6 +8,8 @@ interface Camera {
   isStreaming: boolean;
 }
 
+const API_BASE_URL = 'http://localhost:5000';
+
 function App() {
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +19,7 @@ function App() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:5000/api/cameras');
+      const response = await fetch(`${API_BASE_URL}/api/cameras`);
       if (!response.ok) {
         throw new Error('Failed to load cameras');
       }
@@ -36,12 +38,12 @@ function App() {
   }, []);
 
   const toggleStream = async (cameraId: string) => {
-      const camera = cameras.find((c: Camera) => c.id === cameraId);
     try {
+      const camera = cameras.find((c: Camera) => c.id === cameraId);
       if (!camera) return;
 
       const newStatus = !camera.isStreaming;
-      const response = await fetch(`http://localhost:5000/api/cameras/${cameraId}/stream`, {
+      const response = await fetch(`${API_BASE_URL}/api/cameras/${cameraId}/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +96,7 @@ function App() {
                 <div className="camera-feed">
                   {camera.isStreaming ? (
                     <img 
-                      src={`http://localhost:5000/api/cameras/${camera.id}/stream`}
+                      src={`${API_BASE_URL}/api/cameras/${camera.id}/stream`}
                       alt={`Stream from ${camera.name}`}
                     />
                   ) : (
