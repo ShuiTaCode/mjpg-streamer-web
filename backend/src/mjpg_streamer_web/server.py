@@ -12,12 +12,12 @@ current_device = None
 
 def set_device(device_name):
     global current_device
-    print(f"[LOG] set_device aufgerufen: {device_name}")
+    print(f"[LOG] set_device called: {device_name}")
     current_device = device_name
 
 class MJPEGHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        print(f"[LOG] do_GET aufgerufen: {self.path}")
+        print(f"[LOG] do_GET called: {self.path}")
         logging.info(f"GET {self.path}")
         if self.path.startswith('/set_camera'):
             import urllib.parse
@@ -30,11 +30,11 @@ class MJPEGHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'OK')
             else:
-                self.send_error(400, 'Ungültiges Device')
+                self.send_error(400, 'Invalid device')
             return
         if self.path == '/cameras':
             cameras = sorted(glob.glob('/dev/video*'))
-            logging.info(f"Gefundene Kameras: {cameras}")
+            logging.info(f"Found cameras: {cameras}")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -48,11 +48,11 @@ class MJPEGHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(f.read())
             except Exception as e:
-                logging.error(f"Fehler beim Laden des Frontends: {e}")
-                self.send_error(500, f'Fehler beim Laden des Frontends: {e}')
+                logging.error(f"Error loading frontend: {e}")
+                self.send_error(500, f'Error loading frontend: {e}')
             return
         if self.path == '/stream' or self.path.startswith('/stream?'):
-            logging.info(f"Starte MJPEG-Stream für Device {current_device}")
+            logging.info(f"Starting MJPEG stream for device {current_device}")
             self.send_response(200)
             self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=frame')
             self.end_headers()
@@ -63,7 +63,7 @@ class MJPEGHandler(BaseHTTPRequestHandler):
                     self.wfile.write(frame)
                     self.wfile.write(b"\r\n")
                 except BrokenPipeError:
-                    logging.warning("BrokenPipeError beim Streamen")
+                    logging.warning("BrokenPipeError while streaming")
                     break
             return
         self.send_error(404)
@@ -79,7 +79,7 @@ class MJPEGHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'OK')
             else:
-                self.send_error(400, 'Ungültiges Device')
+                self.send_error(400, 'Invalid device')
             return
         self.send_error(404)
 
@@ -87,26 +87,26 @@ class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 def start_server(host="0.0.0.0", port=8081):
-    print("[LOG] Starte Server...")
-    # Logging für /dev und Devices
+    print("[LOG] Starting server...")
+    # Logging for /dev and devices
     dev_exists = os.path.exists('/dev')
-    logging.info(f"/dev existiert: {dev_exists}")
+    logging.info(f"/dev exists: {dev_exists}")
     if dev_exists:
         video_devices = sorted(glob.glob('/dev/video*'))
-        logging.info(f"Gefundene /dev/video*-Dateien beim Start: {video_devices}")
+        logging.info(f"Found /dev/video* devices at startup: {video_devices}")
         for dev in video_devices:
             try:
                 accessible = os.access(dev, os.R_OK | os.W_OK)
-                logging.info(f"{dev}: Zugriffsrechte (lesen/schreiben): {accessible}")
+                logging.info(f"{dev}: Read/write access: {accessible}")
             except Exception as e:
-                logging.error(f"Fehler beim Prüfen von {dev}: {e}")
+                logging.error(f"Error checking {dev}: {e}")
         if video_devices:
             global current_device
             current_device = video_devices[0]
     else:
-        logging.error("/dev-Verzeichnis nicht gefunden!")
+        logging.error("/dev directory not found!")
     server = ThreadingHTTPServer((host, port), MJPEGHandler)
-    print(f"📷 MJPEG Streamer läuft auf http://{host}:{port}")
+    print(f"📷 MJPEG Streamer running at http://{host}:{port}")
     server.serve_forever()
 
 if __name__ == "__main__":

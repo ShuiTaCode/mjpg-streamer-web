@@ -23,7 +23,7 @@ class CameraManager:
                     cls._refcounts[device] += 1
                     return cls._instances[device]
             time.sleep(delay)
-        # Nach allen Versuchen: None zurückgeben
+        # After all attempts: return None
         return None
 
     @classmethod
@@ -36,4 +36,4 @@ class CameraManager:
                         if device in cls._instances:
                             cls._instances[device].release()
                             del cls._instances[device]
-                        del cls._refcounts[device] 
+                            del cls._refcounts[device] 
